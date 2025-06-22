@@ -1,12 +1,3 @@
-pub const DISPLAY_WIDTH: usize = 64;
-pub const DISPLAY_HEIGHT: usize = 32;
-
-pub const RAM_SIZE: usize = 4096;
-
-pub const SPRITE_DATA_START: usize = 0x050;
-pub const SPRITE_DATA_END: usize = 0x09F;
-pub const SPRITE_FONT_SIZE: usize = 5;
-
 pub const SPRITE_ZERO: &[u8] = &[0xF0, 0x90, 0x90, 0x90, 0xF0];
 pub const SPRITE_ONE: &[u8] = &[0x20, 0x60, 0x20, 0x20, 0x70];
 pub const SPRITE_TWO: &[u8] = &[0xF0, 0x10, 0xF0, 0x80, 0xF0];
