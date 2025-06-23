@@ -34,10 +34,10 @@ fn main() {
                     match instruction & 0x00FF {
                         0x00E0 => todo!(), //TODO CLEAR SCREEN
                         0x00EE => todo!(), //TODO RETURN FROM SUBROUTINE
-                        _ => (),
+                        _ => (),           //IGNORE 0x0NNN,
                     }
                 }
-                _ => todo!(), //TODO IGNORE
+                _ => todo!(),
             }
 
             last_execution_time = Instant::now();
