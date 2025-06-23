@@ -29,7 +29,16 @@ fn main() {
 
             let instruction: u16 = u16::from_le_bytes(instruction_as_bytes.try_into().unwrap());
 
-            match (instruction & 0xF000) {}
+            match instruction & 0xF000 {
+                0x0000 => {
+                    match instruction & 0x00FF {
+                        0x00E0 => todo!(), //TODO CLEAR SCREEN
+                        0x00EE => todo!(), //TODO RETURN FROM SUBROUTINE
+                        _ => (),
+                    }
+                }
+                _ => todo!(), //TODO IGNORE
+            }
 
             last_execution_time = Instant::now();
         }
