@@ -1,4 +1,7 @@
-use std::time::{Duration, Instant};
+use std::{
+    thread::current,
+    time::{Duration, Instant},
+};
 
 use chip_8_emulator::*;
 
@@ -7,7 +10,7 @@ fn main() {
 
     write_sprite_data(&mut ram);
 
-    let pc_init_idx = emulator_data::PC_START as u16;
+    let pc_init_idx = emulator_data::FREE_MEM_START as u16;
     let idx_as_bytes = pc_init_idx.to_le_bytes();
     ram[emulator_data::PC_START..=emulator_data::PC_END].copy_from_slice(&idx_as_bytes);
 
@@ -20,8 +23,11 @@ fn main() {
 
     loop {
         if last_execution_time.elapsed() > instruction_delay {
-            //TODO
+            let current_pc = &ram[emulator_data::PC_START..=emulator_data::PC_END];
+            let instruction_idx = u16::from_le_bytes(current_pc.try_into().unwrap());
+            // TODO fetch from instruction_idx the instruction and execute
+            update_pc(&mut ram);
+            last_execution_time = Instant::now();
         }
-        last_execution_time = Instant::now();
     }
 }
