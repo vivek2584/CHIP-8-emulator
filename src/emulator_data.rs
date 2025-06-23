@@ -37,3 +37,5 @@ pub const SOUND_TIMER_SIZE: usize = 1;
 
 pub const FREE_MEM_START: usize = 0x228;
 pub const FREE_MEM_END: usize = RAM_SIZE - 1;
+
+pub const INSTRUCTION_SIZE: usize = 2;

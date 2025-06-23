@@ -7,6 +7,10 @@ fn main() {
 
     write_sprite_data(&mut ram);
 
+    let pc_init_idx = emulator_data::PC_START as u16;
+    let idx_as_bytes = pc_init_idx.to_le_bytes();
+    ram[emulator_data::PC_START..=emulator_data::PC_END].copy_from_slice(&idx_as_bytes);
+
     let instruction_delay = Duration::from_micros(1_000_000 / 700); // limit to 700 instructions
                                                                     // per second
     let timer_interval = Duration::from_millis(1000 / 60); // decrease timer 60 times per
@@ -16,7 +20,7 @@ fn main() {
 
     loop {
         if last_execution_time.elapsed() > instruction_delay {
-            //TODO DECODE AND EXECUTE
+            //TODO
         }
         last_execution_time = Instant::now();
     }
