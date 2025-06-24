@@ -33,8 +33,17 @@ fn main() {
                 0x0000 => {
                     match instruction & 0x00FF {
                         0x00E0 => todo!(), //TODO CLEAR SCREEN
-                        0x00EE => todo!(), //TODO RETURN FROM SUBROUTINE
-                        _ => (),           //IGNORE 0x0NNN,
+                        0x00EE => {
+                            let mut sp = ram[emulator_data::STACK_PTR_LOC] as usize;
+                            let addr = &ram[(emulator_data::STACK_START + sp - 2)
+                                ..(emulator_data::STACK_START + sp)];
+                            let owned: [u8; 2] = addr.try_into().unwrap();
+                            ram[emulator_data::PC_START..=emulator_data::PC_END]
+                                .copy_from_slice(&owned);
+                            sp -= 2;
+                            ram[emulator_data::STACK_PTR_LOC] = sp as u8;
+                        }
+                        _ => (), //IGNORE 0x0NNN,
                     }
                 }
 
