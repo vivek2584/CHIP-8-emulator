@@ -57,23 +57,77 @@ fn main() {
                 }
 
                 0x5000 => {
-                    todo!() // 5XY0 => CHECK IF VALUES IN VX AND VY ARE EQUAL AND SKIP ONE
-                            // INSTRUCTION
+                    todo!() //TODO 5XY0 => CHECK IF VALUES IN VX AND VY ARE EQUAL AND SKIP ONE
+                            //INSTRUCTION
                 }
 
                 0x6000 => {
-                    todo!() // 6XNN => SET VX TO NN
+                    todo!() //TODO 6XNN => SET VX TO NN
                 }
 
                 0x7000 => {
-                    todo!() // 7XNN => ADD NN TO VX and wrap around if overflow
+                    todo!() //TODO 7XNN => ADD NN TO VX and wrap around if overflow
                 }
 
-                0x8000 => {}
+                0x8000 => {
+                    // 8XY_
+                    match instruction & 0x000F {
+                        0x0000 => todo!(), //TODO SET VX TO VY
+                        0x0001 => todo!(), //TODO VX SET TO VX | VY
+                        0x0002 => todo!(), //TODO VX SET TO VX & VY
+                        0x0003 => todo!(), //TODO VX SET TO VX ^ VY
+                        0x0004 => todo!(), //TODO VX SET TO VX + VY, affects the VF CARRY FLAG
+                        0x0005 => todo!(), //TODO VX SET TO VX - VY, affects the carry flag
+                        0x0006 => todo!(), //TODO SHIFT VX IN PLACE TO RIGHT, SET VF TO SHIFTED BIT
+                        0x0007 => todo!(), //TODO VX SET TO VY - VX, affects the carry flag
+                        0x000E => todo!(), //TODO SHIFT VX IN PLACE TO LEFT, SET VF TO SHIFTED BIT
+                        _ => (),
+                    }
+                }
 
                 0x9000 => {
-                    todo!() // 9XY0 => CHECK IF VALUES IN VX AND VY ARE NOT EQUAL AND SKIP ONE
+                    todo!() //TODO 9XY0 => CHECK IF VALUES IN VX AND VY ARE NOT EQUAL AND SKIP ONE
                             // INSTRUCTION
+                }
+
+                0xA000 => {
+                    todo!() //TODO ANNN => SET 'I' REGISTER TO NNN
+                }
+
+                0xB000 => {
+                    todo!() //TODO BNNN => SET PC TO NNN + value in V0
+                }
+
+                0xC000 => {
+                    todo!() //TODO CXNN => SET VX TO A RANDOM NUMBER &  NN
+                }
+
+                0xD000 => {
+                    todo!() //TODO DXYN => refer to guide, big ass instruction
+                }
+
+                0xE000 => {
+                    match instruction & 0x00FF {
+                        0x009E => todo!(), //TODO EX9E => SKIP ONE INSTRUCTION IF KEY CORRESPONDING TO VALUE IN VX IS PRESSED
+                        0x00A1 => todo!(), //TODO EXA1 => SKIP ONE INSTRUCTION IF KEY CORRESPONDING TO VALUE IN VX IS NOT PRESSED
+                        _ => (),           // KEYS RANGE FROM 0 - F
+                    }
+                }
+
+                0xF000 => {
+                    //0xFX__
+                    match instruction & 0x00FF {
+                        0x0007 => todo!(), //TODO SET VX TO CURRENT VALUE OF DELAY TIMER
+                        0x0015 => todo!(), //TODO SET DELAY TIMER TO VALUE IN VX
+                        0x0018 => todo!(), //TODO SET SOUND TIMER TO VALUE IN VX
+                        0x001E => todo!(), //TODO I = I + VALUE IN VX, overflow of I above 0x0FFF (4096) sets VF to 1
+                        0x000A => todo!(), //TODO WAITS FOR KEY INPUT AND BLOCKS BUT TIMERS SHOULD STILL BE DECREASING, SET HEX VALUE OF KEY TO VX
+                        0x0029 => todo!(), //TODO SET I TO POINT TO SPRITE DATA OF HEX STORED IN VX
+                        0x0033 => todo!(), //TODO TAKE VAL IN VX, CONVERT TO 3 DIGIT DECIMAL, STORE THE DIGIT AT ADDRESS STORED IN I, I+1, I+2
+                        0x0055 => todo!(), //TODO STORE V0 to VX in I to I + X (where I is actually pointing to) USE A TEMP VARIABLE INSTEAD OF CHANGING I
+                        0x0065 => todo!(), //TODO STORE I to I + X in V0 to VX (reverse of above)  USE A TEMP VARIABLE INSTEAD OF CHANGING I
+                        _ => (),
+                    }
                 }
 
                 _ => todo!(),
