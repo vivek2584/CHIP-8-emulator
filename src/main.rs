@@ -39,7 +39,8 @@ fn main() {
                 }
 
                 0x1000 => {
-                    todo!() // TODO EXTRACT NNN FROM 1NNN AND SET PC TO NNN, DO NOT INCREMENT PC
+                    let jump_to: u16 = instruction & 0x0FFF;
+                    set_pc(&mut ram, jump_to);
                 }
 
                 0x2000 => {
@@ -70,7 +71,7 @@ fn main() {
                 }
 
                 0x8000 => {
-                    // 8XY_
+                    // 0x8XY_
                     match instruction & 0x000F {
                         0x0000 => todo!(), //TODO SET VX TO VY
                         0x0001 => todo!(), //TODO VX SET TO VX | VY
@@ -107,6 +108,7 @@ fn main() {
                 }
 
                 0xE000 => {
+                    //0xEX__
                     match instruction & 0x00FF {
                         0x009E => todo!(), //TODO EX9E => SKIP ONE INSTRUCTION IF KEY CORRESPONDING TO VALUE IN VX IS PRESSED
                         0x00A1 => todo!(), //TODO EXA1 => SKIP ONE INSTRUCTION IF KEY CORRESPONDING TO VALUE IN VX IS NOT PRESSED

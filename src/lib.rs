@@ -13,6 +13,11 @@ pub fn update_pc(ram: &mut [u8]) {
     let current_ptr = &ram[emulator_data::PC_START..=emulator_data::PC_END];
     let mut current_as_u16 = u16::from_le_bytes(current_ptr.try_into().unwrap());
     current_as_u16 += emulator_data::INSTRUCTION_SIZE as u16;
-    let new_ptr = current_as_u16.to_le_bytes();
-    ram[emulator_data::PC_START..=emulator_data::PC_END].copy_from_slice(&new_ptr);
+    let ptr_as_bytes = current_as_u16.to_le_bytes();
+    ram[emulator_data::PC_START..=emulator_data::PC_END].copy_from_slice(&ptr_as_bytes);
+}
+
+pub fn set_pc(ram: &mut [u8], target: u16) {
+    let target_as_bytes = target.to_le_bytes();
+    ram[emulator_data::PC_START..=emulator_data::PC_END].copy_from_slice(&target_as_bytes);
 }
