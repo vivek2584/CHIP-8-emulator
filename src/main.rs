@@ -44,8 +44,15 @@ fn main() {
                 }
 
                 0x2000 => {
-                    todo!() // TODO SAME AS 1NNN but first push current pc value to stack to return
-                            // with 00EE
+                    let pc_ref = &ram[emulator_data::PC_START..=emulator_data::PC_END];
+                    let owned: [u8; 2] = pc_ref.try_into().unwrap();
+                    let mut sp = ram[emulator_data::STACK_PTR_LOC] as usize;
+                    ram[(emulator_data::STACK_START + sp)..=(emulator_data::STACK_START + sp + 1)]
+                        .copy_from_slice(&owned);
+                    sp += 2;
+                    ram[emulator_data::STACK_PTR_LOC] = sp as u8;
+                    let jump_to: u16 = instruction & 0x0FFF;
+                    set_pc(&mut ram, jump_to);
                 }
 
                 0x3000 => {
