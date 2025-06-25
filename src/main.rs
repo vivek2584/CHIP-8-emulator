@@ -258,8 +258,25 @@ fn main() {
                             ram[emulator_data::GPR_END_VF] = (I_as_u16 > 0x0FFF) as u8;
                         }
                         0x000A => todo!(), //TODO WAITS FOR KEY INPUT AND BLOCKS BUT TIMERS SHOULD STILL BE DECREASING, SET HEX VALUE OF KEY TO VX
-                        0x0029 => todo!(), //TODO SET I TO POINT TO SPRITE DATA OF HEX STORED IN VX
-                        0x0033 => todo!(), //TODO TAKE VAL IN VX, CONVERT TO 3 DIGIT DECIMAL, STORE THE DIGIT AT ADDRESS STORED IN I, I+1, I+2
+                        0x0029 => {
+                            let X = ((instruction & 0x0F00) >> 8) as usize;
+                            let sprite = ram[emulator_data::GPR_START_V0 + X] as usize;
+                            let sprite_loc = (emulator_data::SPRITE_DATA_START
+                                + sprite * emulator_data::SPRITE_FONT_SIZE)
+                                as u16;
+                            let sprite_loc_as_bytes = sprite_loc.to_le_bytes();
+                            ram[emulator_data::I_START..=emulator_data::I_END]
+                                .copy_from_slice(&sprite_loc_as_bytes);
+                        }
+                        0x0033 => {
+                            let X = ((instruction & 0x0F00) >> 8) as usize;
+                            let VX = ram[emulator_data::GPR_START_V0 + X];
+                            let ref_I = &ram[emulator_data::I_START..=emulator_data::I_END];
+                            let owned: [u8; 2] = ref_I.try_into().unwrap();
+                            let I_usize = u16::from_le_bytes(owned) as usize;
+                            let BCD: [u8; 3] = [VX / 100, (VX % 100) / 10, VX % 10];
+                            ram[I_usize..=I_usize + 2].copy_from_slice(&BCD);
+                        }
                         0x0055 => todo!(), //TODO STORE V0 to VX in I to I + X (where I is actually pointing to) USE A TEMP VARIABLE INSTEAD OF CHANGING I
                         0x0065 => todo!(), //TODO STORE I to I + X in V0 to VX (reverse of above)  USE A TEMP VARIABLE INSTEAD OF CHANGING I
                         _ => (),
