@@ -194,7 +194,12 @@ fn main() {
                 }
 
                 0xB000 => {
-                    todo!() //TODO BNNN => SET PC TO NNN + value in V0
+                    let V0 = ram[emulator_data::GPR_START_V0] as u16;
+                    let NNN = instruction & 0x0FFF;
+                    let PC = NNN + V0;
+                    let PC_as_bytes = PC.to_le_bytes();
+                    ram[emulator_data::PC_START..=emulator_data::PC_END]
+                        .copy_from_slice(&PC_as_bytes);
                 }
 
                 0xC000 => {
