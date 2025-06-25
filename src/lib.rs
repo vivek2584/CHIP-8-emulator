@@ -1,4 +1,5 @@
 pub mod emulator_data;
+pub mod key_mappings;
 pub mod sprite_data;
 
 pub fn write_sprite_data(ram: &mut [u8]) {
