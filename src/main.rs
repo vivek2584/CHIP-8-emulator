@@ -4,7 +4,6 @@ use chip_8_emulator::*;
 
 fn main() {
     let mut ram: [u8; emulator_data::RAM_SIZE] = [0; emulator_data::RAM_SIZE];
-
     write_sprite_data(&mut ram);
 
     let pc_init_idx = emulator_data::FREE_MEM_START as u16;
@@ -12,9 +11,7 @@ fn main() {
     ram[emulator_data::PC_START..=emulator_data::PC_END].copy_from_slice(&idx_as_bytes);
 
     let instruction_delay = Duration::from_micros(1_000_000 / 700); // limit to 700 instructions
-                                                                    // per second
-    let timer_interval = Duration::from_millis(1000 / 60); // decrease timer 60 times per
-                                                           // second
+    let timer_interval = Duration::from_millis(1000 / 60); // decrease timer 60 times per second
     let mut last_execution_time = Instant::now();
     //TODO DELAY AND SOUND TIMERS decrement at 60hz
 
@@ -23,10 +20,8 @@ fn main() {
             let current_pc = &ram[emulator_data::PC_START..=emulator_data::PC_END];
             let instruction_idx = u16::from_le_bytes(current_pc.try_into().unwrap()) as usize;
             update_pc(&mut ram);
-
             let instruction_as_bytes =
                 &ram[instruction_idx..instruction_idx + emulator_data::INSTRUCTION_SIZE];
-
             let instruction: u16 = u16::from_le_bytes(instruction_as_bytes.try_into().unwrap());
 
             match instruction & 0xF000 {
@@ -109,15 +104,74 @@ fn main() {
                 0x8000 => {
                     // 0x8XY_
                     match instruction & 0x000F {
-                        0x0000 => todo!(), //TODO SET VX TO VY
-                        0x0001 => todo!(), //TODO VX SET TO VX | VY
-                        0x0002 => todo!(), //TODO VX SET TO VX & VY
-                        0x0003 => todo!(), //TODO VX SET TO VX ^ VY
-                        0x0004 => todo!(), //TODO VX SET TO VX + VY, affects the VF CARRY FLAG
-                        0x0005 => todo!(), //TODO VX SET TO VX - VY, affects the carry flag
-                        0x0006 => todo!(), //TODO SHIFT VX IN PLACE TO RIGHT, SET VF TO SHIFTED BIT
-                        0x0007 => todo!(), //TODO VX SET TO VY - VX, affects the carry flag
-                        0x000E => todo!(), //TODO SHIFT VX IN PLACE TO LEFT, SET VF TO SHIFTED BIT
+                        0x0000 => {
+                            let X = ((instruction & 0x0F00) >> 8) as usize;
+                            let Y = ((instruction & 0x00F0) >> 4) as usize;
+                            let VY = ram[emulator_data::GPR_START_V0 + Y];
+                            ram[emulator_data::GPR_START_V0 + X] = VY;
+                        }
+                        0x0001 => {
+                            let X = ((instruction & 0x0F00) >> 8) as usize;
+                            let VX = ram[emulator_data::GPR_START_V0 + X];
+                            let Y = ((instruction & 0x00F0) >> 4) as usize;
+                            let VY = ram[emulator_data::GPR_START_V0 + Y];
+                            ram[emulator_data::GPR_START_V0 + X] = VX | VY;
+                        }
+                        0x0002 => {
+                            let X = ((instruction & 0x0F00) >> 8) as usize;
+                            let VX = ram[emulator_data::GPR_START_V0 + X];
+                            let Y = ((instruction & 0x00F0) >> 4) as usize;
+                            let VY = ram[emulator_data::GPR_START_V0 + Y];
+                            ram[emulator_data::GPR_START_V0 + X] = VX & VY;
+                        }
+                        0x0003 => {
+                            let X = ((instruction & 0x0F00) >> 8) as usize;
+                            let VX = ram[emulator_data::GPR_START_V0 + X];
+                            let Y = ((instruction & 0x00F0) >> 4) as usize;
+                            let VY = ram[emulator_data::GPR_START_V0 + Y];
+                            ram[emulator_data::GPR_START_V0 + X] = VX ^ VY;
+                        }
+                        0x0004 => {
+                            let X = ((instruction & 0x0F00) >> 8) as usize;
+                            let VX = ram[emulator_data::GPR_START_V0 + X];
+                            let Y = ((instruction & 0x00F0) >> 4) as usize;
+                            let VY = ram[emulator_data::GPR_START_V0 + Y];
+                            let (res, carry) = VX.overflowing_add(VY);
+                            ram[emulator_data::GPR_START_V0 + X] = res;
+                            ram[emulator_data::GPR_END_VF] = carry as u8;
+                        }
+                        0x0005 => {
+                            let X = ((instruction & 0x0F00) >> 8) as usize;
+                            let VX = ram[emulator_data::GPR_START_V0 + X];
+                            let Y = ((instruction & 0x00F0) >> 4) as usize;
+                            let VY = ram[emulator_data::GPR_START_V0 + Y];
+                            let (res, borrow) = VX.overflowing_sub(VY);
+                            ram[emulator_data::GPR_START_V0 + X] = res;
+                            ram[emulator_data::GPR_END_VF] = (!borrow) as u8;
+                        }
+                        0x0006 => {
+                            let X = ((instruction & 0x0F00) >> 8) as usize;
+                            let mut VX = ram[emulator_data::GPR_START_V0 + X];
+                            ram[emulator_data::GPR_END_VF] = VX & 0x1;
+                            VX >>= 1;
+                            ram[emulator_data::GPR_START_V0 + X] = VX;
+                        }
+                        0x0007 => {
+                            let X = ((instruction & 0x0F00) >> 8) as usize;
+                            let VX = ram[emulator_data::GPR_START_V0 + X];
+                            let Y = ((instruction & 0x00F0) >> 4) as usize;
+                            let VY = ram[emulator_data::GPR_START_V0 + Y];
+                            let (res, borrow) = VY.overflowing_sub(VX);
+                            ram[emulator_data::GPR_START_V0 + X] = res;
+                            ram[emulator_data::GPR_END_VF] = (!borrow) as u8;
+                        }
+                        0x000E => {
+                            let X = ((instruction & 0x0F00) >> 8) as usize;
+                            let mut VX = ram[emulator_data::GPR_START_V0 + X];
+                            ram[emulator_data::GPR_END_VF] = VX >> 7;
+                            VX <<= 1;
+                            ram[emulator_data::GPR_START_V0 + X] = VX;
+                        }
                         _ => (),
                     }
                 }
