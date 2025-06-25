@@ -1,6 +1,6 @@
-use std::time::{Duration, Instant};
-
 use chip_8_emulator::*;
+use rand::*;
+use std::time::{Duration, Instant};
 
 fn main() {
     let mut ram: [u8; emulator_data::RAM_SIZE] = [0; emulator_data::RAM_SIZE];
@@ -203,7 +203,11 @@ fn main() {
                 }
 
                 0xC000 => {
-                    todo!() //TODO CXNN => SET VX TO A RANDOM NUMBER &  NN
+                    let NN = (instruction & 0x00FF) as u8;
+                    let X = ((instruction & 0x0F00) >> 8) as usize;
+                    let mut rng = rand::rng();
+                    let rand_u8 = rng.random_range(0..=u8::MAX);
+                    ram[emulator_data::GPR_START_V0 + X] = NN & rand_u8;
                 }
 
                 0xD000 => {
