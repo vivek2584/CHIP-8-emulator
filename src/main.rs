@@ -16,7 +16,8 @@ fn main() {
     let instruction_delay = Duration::from_micros(1_000_000 / 700); // limit to 700 instructions
     let timer_interval = Duration::from_millis(1000 / 60); // decrease timer 60 times per second
     let mut last_execution_time = Instant::now();
-    //TODO DELAY AND SOUND TIMERS decrement at 60hz
+    let mut last_delay_decr = Instant::now();
+    let mut last_sound_decr = Instant::now();
 
     loop {
         if last_execution_time.elapsed() > instruction_delay {
@@ -265,10 +266,22 @@ fn main() {
                     }
                 }
 
-                _ => todo!(),
+                _ => (),
             }
 
             last_execution_time = Instant::now();
+        }
+
+        if (ram[emulator_data::DELAY_TIMER_LOC] > 0) && (last_delay_decr.elapsed() > timer_interval)
+        {
+            ram[emulator_data::DELAY_TIMER_LOC] -= 1;
+            last_delay_decr = Instant::now();
+        }
+
+        if (ram[emulator_data::SOUND_TIMER_LOC] > 0) && (last_sound_decr.elapsed() > timer_interval)
+        {
+            ram[emulator_data::SOUND_TIMER_LOC] -= 1;
+            last_sound_decr = Instant::now();
         }
     }
 }
