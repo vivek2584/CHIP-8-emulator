@@ -93,11 +93,17 @@ fn main() {
                 }
 
                 0x6000 => {
-                    todo!() //TODO 6XNN => SET VX TO NN
+                    let X = ((instruction & 0x0F00) >> 8) as usize;
+                    let NN = (instruction & 0x00FF) as u8;
+                    ram[emulator_data::GPR_START_V0 + X] = NN;
                 }
 
                 0x7000 => {
-                    todo!() //TODO 7XNN => ADD NN TO VX and wrap around if overflow
+                    let X = ((instruction & 0x0F00) >> 8) as usize;
+                    let NN = (instruction & 0x00FF) as u8;
+                    let mut VX = ram[emulator_data::GPR_START_V0 + X];
+                    VX = VX.wrapping_add(NN);
+                    ram[emulator_data::GPR_START_V0 + X] = VX;
                 }
 
                 0x8000 => {
