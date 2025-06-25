@@ -1,9 +1,6 @@
 use chip_8_emulator::*;
 use rand::*;
-use std::{
-    io::empty,
-    time::{Duration, Instant},
-};
+use std::time::{Duration, Instant};
 
 fn main() {
     let mut ram: [u8; emulator_data::RAM_SIZE] = [0; emulator_data::RAM_SIZE];
@@ -275,10 +272,28 @@ fn main() {
                             let owned: [u8; 2] = ref_I.try_into().unwrap();
                             let I_usize = u16::from_le_bytes(owned) as usize;
                             let BCD: [u8; 3] = [VX / 100, (VX % 100) / 10, VX % 10];
-                            ram[I_usize..=I_usize + 2].copy_from_slice(&BCD);
+                            ram[I_usize..=(I_usize + 2)].copy_from_slice(&BCD);
                         }
-                        0x0055 => todo!(), //TODO STORE V0 to VX in I to I + X (where I is actually pointing to) USE A TEMP VARIABLE INSTEAD OF CHANGING I
-                        0x0065 => todo!(), //TODO STORE I to I + X in V0 to VX (reverse of above)  USE A TEMP VARIABLE INSTEAD OF CHANGING I
+                        0x0055 => {
+                            let X = ((instruction & 0x0F00) >> 8) as usize;
+                            let ref_I = &ram[emulator_data::I_START..=emulator_data::I_END];
+                            let owned: [u8; 2] = ref_I.try_into().unwrap();
+                            let I_usize = u16::from_le_bytes(owned) as usize;
+                            let register_bytes = &ram
+                                [emulator_data::GPR_START_V0..=(emulator_data::GPR_START_V0 + X)];
+                            let owned = register_bytes.to_vec();
+                            ram[I_usize..=(I_usize + X)].copy_from_slice(&owned[..]);
+                        }
+                        0x0065 => {
+                            let X = ((instruction & 0x0F00) >> 8) as usize;
+                            let ref_I = &ram[emulator_data::I_START..=emulator_data::I_END];
+                            let owned: [u8; 2] = ref_I.try_into().unwrap();
+                            let I_usize = u16::from_le_bytes(owned) as usize;
+                            let I_bytes = &ram[I_usize..=(I_usize + X)];
+                            let owned = I_bytes.to_vec();
+                            ram[emulator_data::GPR_START_V0..=(emulator_data::GPR_START_V0 + X)]
+                                .copy_from_slice(&owned[..]);
+                        }
                         _ => (),
                     }
                 }
