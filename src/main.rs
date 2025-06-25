@@ -65,17 +65,31 @@ fn main() {
                 }
 
                 0x3000 => {
-                    todo!() //TODO 3XNN =>  CHECK IF VX IS EQUAL TO NN THEN SKIP ONE INSTRUCTION
-                            //TODO MAKE A FUNCTION TO MAP THE EXTRACTED X VALUE TO REGISTER VX
+                    let X = ((instruction & 0x0F00) >> 8) as usize;
+                    let VX = ram[emulator_data::GPR_START_V0 + X];
+                    let NN = (instruction & 0x00FF) as u8;
+                    if VX == NN {
+                        update_pc(&mut ram);
+                    }
                 }
 
                 0x4000 => {
-                    todo!() //TODO 4XNN => SAME AS ABOVE BUT VX SHOULD NOT BE EQUAL TO NN
+                    let X = ((instruction & 0x0F00) >> 8) as usize;
+                    let VX = ram[emulator_data::GPR_START_V0 + X];
+                    let NN = (instruction & 0x00FF) as u8;
+                    if VX != NN {
+                        update_pc(&mut ram);
+                    }
                 }
 
                 0x5000 => {
-                    todo!() //TODO 5XY0 => CHECK IF VALUES IN VX AND VY ARE EQUAL AND SKIP ONE
-                            //INSTRUCTION
+                    let X = ((instruction & 0x0F00) >> 8) as usize;
+                    let VX = ram[emulator_data::GPR_START_V0 + X];
+                    let Y = ((instruction & 0x00F0) >> 4) as usize;
+                    let VY = ram[emulator_data::GPR_START_V0 + Y];
+                    if VX == VY {
+                        update_pc(&mut ram);
+                    }
                 }
 
                 0x6000 => {
@@ -103,8 +117,13 @@ fn main() {
                 }
 
                 0x9000 => {
-                    todo!() //TODO 9XY0 => CHECK IF VALUES IN VX AND VY ARE NOT EQUAL AND SKIP ONE
-                            // INSTRUCTION
+                    let X = ((instruction & 0x0F00) >> 8) as usize;
+                    let VX = ram[emulator_data::GPR_START_V0 + X];
+                    let Y = ((instruction & 0x00F0) >> 4) as usize;
+                    let VY = ram[emulator_data::GPR_START_V0 + Y];
+                    if VX != VY {
+                        update_pc(&mut ram);
+                    }
                 }
 
                 0xA000 => {
