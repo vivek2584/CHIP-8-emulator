@@ -187,7 +187,10 @@ fn main() {
                 }
 
                 0xA000 => {
-                    todo!() //TODO ANNN => SET 'I' REGISTER TO NNN
+                    let NNN = instruction & 0x0FFF;
+                    let NNN_as_bytes = NNN.to_le_bytes();
+                    ram[emulator_data::I_START..=emulator_data::I_END]
+                        .copy_from_slice(&NNN_as_bytes);
                 }
 
                 0xB000 => {
