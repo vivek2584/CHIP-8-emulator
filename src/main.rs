@@ -1,6 +1,9 @@
 use chip_8_emulator::*;
 use rand::*;
-use std::time::{Duration, Instant};
+use std::{
+    io::empty,
+    time::{Duration, Instant},
+};
 
 fn main() {
     let mut ram: [u8; emulator_data::RAM_SIZE] = [0; emulator_data::RAM_SIZE];
@@ -226,10 +229,33 @@ fn main() {
                 0xF000 => {
                     //0xFX__
                     match instruction & 0x00FF {
-                        0x0007 => todo!(), //TODO SET VX TO CURRENT VALUE OF DELAY TIMER
-                        0x0015 => todo!(), //TODO SET DELAY TIMER TO VALUE IN VX
-                        0x0018 => todo!(), //TODO SET SOUND TIMER TO VALUE IN VX
-                        0x001E => todo!(), //TODO I = I + VALUE IN VX, overflow of I above 0x0FFF (4096) sets VF to 1
+                        0x0007 => {
+                            let X = ((instruction & 0x0F00) >> 8) as usize;
+                            ram[emulator_data::GPR_START_V0 + X] =
+                                ram[emulator_data::DELAY_TIMER_LOC];
+                        }
+                        0x0015 => {
+                            let X = ((instruction & 0x0F00) >> 8) as usize;
+                            ram[emulator_data::DELAY_TIMER_LOC] =
+                                ram[emulator_data::GPR_START_V0 + X];
+                        }
+                        0x0018 => {
+                            let X = ((instruction & 0x0F00) >> 8) as usize;
+                            ram[emulator_data::SOUND_TIMER_LOC] =
+                                ram[emulator_data::GPR_START_V0 + X];
+                        }
+                        0x001E => {
+                            let X = ((instruction & 0x0F00) >> 8) as usize;
+                            let VX = ram[emulator_data::GPR_START_V0 + X] as u16;
+                            let I = &ram[emulator_data::I_START..=emulator_data::I_END];
+                            let owned: [u8; 2] = I.try_into().unwrap();
+                            let mut I_as_u16 = u16::from_le_bytes(owned);
+                            I_as_u16 += VX;
+                            let new_I_as_bytes = I_as_u16.to_le_bytes();
+                            ram[emulator_data::I_START..=emulator_data::I_END]
+                                .copy_from_slice(&new_I_as_bytes);
+                            ram[emulator_data::GPR_END_VF] = (I_as_u16 > 0x0FFF) as u8;
+                        }
                         0x000A => todo!(), //TODO WAITS FOR KEY INPUT AND BLOCKS BUT TIMERS SHOULD STILL BE DECREASING, SET HEX VALUE OF KEY TO VX
                         0x0029 => todo!(), //TODO SET I TO POINT TO SPRITE DATA OF HEX STORED IN VX
                         0x0033 => todo!(), //TODO TAKE VAL IN VX, CONVERT TO 3 DIGIT DECIMAL, STORE THE DIGIT AT ADDRESS STORED IN I, I+1, I+2
