@@ -11,6 +11,17 @@ fn main() {
     let idx_as_bytes = pc_init_idx.to_le_bytes();
     ram[emulator_data::PC_START..=emulator_data::PC_END].copy_from_slice(&idx_as_bytes);
 
+    let rom_path = "roms/PONG.ch8";
+    let rom_data = std::fs::read(rom_path).expect("Failed to read ROM");
+
+    let start = emulator_data::FREE_MEM_START;
+    let end = start + rom_data.len();
+    if end >= emulator_data::RAM_SIZE {
+        panic!("ROM too large to fit in memory");
+    }
+
+    ram[start..end].copy_from_slice(&rom_data);
+
     let mut display_buffer: Vec<u32> =
         vec![0; emulator_data::DISPLAY_WIDTH * emulator_data::DISPLAY_HEIGHT];
 
