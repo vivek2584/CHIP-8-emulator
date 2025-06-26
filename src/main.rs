@@ -56,6 +56,7 @@ fn main() {
                         0x00E0 => {
                             display_buffer.fill(0);
                         }
+
                         0x00EE => {
                             let mut sp = ram[emulator_data::STACK_PTR_LOC] as usize;
                             let addr = &ram[(emulator_data::STACK_START + sp - 2)
@@ -138,6 +139,7 @@ fn main() {
                             let VY = ram[emulator_data::GPR_START_V0 + Y];
                             ram[emulator_data::GPR_START_V0 + X] = VY;
                         }
+
                         0x0001 => {
                             let X = ((instruction & 0x0F00) >> 8) as usize;
                             let VX = ram[emulator_data::GPR_START_V0 + X];
@@ -145,6 +147,7 @@ fn main() {
                             let VY = ram[emulator_data::GPR_START_V0 + Y];
                             ram[emulator_data::GPR_START_V0 + X] = VX | VY;
                         }
+
                         0x0002 => {
                             let X = ((instruction & 0x0F00) >> 8) as usize;
                             let VX = ram[emulator_data::GPR_START_V0 + X];
@@ -152,6 +155,7 @@ fn main() {
                             let VY = ram[emulator_data::GPR_START_V0 + Y];
                             ram[emulator_data::GPR_START_V0 + X] = VX & VY;
                         }
+
                         0x0003 => {
                             let X = ((instruction & 0x0F00) >> 8) as usize;
                             let VX = ram[emulator_data::GPR_START_V0 + X];
@@ -159,6 +163,7 @@ fn main() {
                             let VY = ram[emulator_data::GPR_START_V0 + Y];
                             ram[emulator_data::GPR_START_V0 + X] = VX ^ VY;
                         }
+
                         0x0004 => {
                             let X = ((instruction & 0x0F00) >> 8) as usize;
                             let VX = ram[emulator_data::GPR_START_V0 + X];
@@ -168,6 +173,7 @@ fn main() {
                             ram[emulator_data::GPR_START_V0 + X] = res;
                             ram[emulator_data::GPR_END_VF] = carry as u8;
                         }
+
                         0x0005 => {
                             let X = ((instruction & 0x0F00) >> 8) as usize;
                             let VX = ram[emulator_data::GPR_START_V0 + X];
@@ -177,6 +183,7 @@ fn main() {
                             ram[emulator_data::GPR_START_V0 + X] = res;
                             ram[emulator_data::GPR_END_VF] = (!borrow) as u8;
                         }
+
                         0x0006 => {
                             let X = ((instruction & 0x0F00) >> 8) as usize;
                             let mut VX = ram[emulator_data::GPR_START_V0 + X];
@@ -184,6 +191,7 @@ fn main() {
                             VX >>= 1;
                             ram[emulator_data::GPR_START_V0 + X] = VX;
                         }
+
                         0x0007 => {
                             let X = ((instruction & 0x0F00) >> 8) as usize;
                             let VX = ram[emulator_data::GPR_START_V0 + X];
@@ -193,6 +201,7 @@ fn main() {
                             ram[emulator_data::GPR_START_V0 + X] = res;
                             ram[emulator_data::GPR_END_VF] = (!borrow) as u8;
                         }
+
                         0x000E => {
                             let X = ((instruction & 0x0F00) >> 8) as usize;
                             let mut VX = ram[emulator_data::GPR_START_V0 + X];
@@ -254,6 +263,7 @@ fn main() {
                                 }
                             }
                         }
+
                         0x00A1 => {
                             let X = ((instruction & 0x0F00) >> 8) as usize;
                             let key_hex = ram[emulator_data::GPR_START_V0 + X];
@@ -275,16 +285,19 @@ fn main() {
                             ram[emulator_data::GPR_START_V0 + X] =
                                 ram[emulator_data::DELAY_TIMER_LOC];
                         }
+
                         0x0015 => {
                             let X = ((instruction & 0x0F00) >> 8) as usize;
                             ram[emulator_data::DELAY_TIMER_LOC] =
                                 ram[emulator_data::GPR_START_V0 + X];
                         }
+
                         0x0018 => {
                             let X = ((instruction & 0x0F00) >> 8) as usize;
                             ram[emulator_data::SOUND_TIMER_LOC] =
                                 ram[emulator_data::GPR_START_V0 + X];
                         }
+
                         0x001E => {
                             let X = ((instruction & 0x0F00) >> 8) as usize;
                             let VX = ram[emulator_data::GPR_START_V0 + X] as u16;
@@ -298,7 +311,22 @@ fn main() {
                             ram[emulator_data::GPR_END_VF] = (I_as_u16 > 0x0FFF) as u8;
                             // ^ AMBIGUOUS
                         }
-                        0x000A => todo!(), //TODO WAITS FOR KEY INPUT AND BLOCKS BUT TIMERS SHOULD STILL BE DECREASING, SET HEX VALUE OF KEY TO VX
+
+                        0x000A => {
+                            let X = ((instruction & 0x0F00) >> 8) as usize;
+                            let keys_pressed = window.get_keys_pressed(KeyRepeat::No);
+
+                            if let Some(key) = keys_pressed
+                                .into_iter()
+                                .filter_map(key_mappings::get_hex)
+                                .next()
+                            {
+                                ram[emulator_data::GPR_START_V0 + X] = key;
+                            } else {
+                                decrement_pc(&mut ram);
+                            }
+                        }
+
                         0x0029 => {
                             let X = ((instruction & 0x0F00) >> 8) as usize;
                             let sprite = ram[emulator_data::GPR_START_V0 + X] as usize;
@@ -309,6 +337,7 @@ fn main() {
                             ram[emulator_data::I_START..=emulator_data::I_END]
                                 .copy_from_slice(&sprite_loc_as_bytes);
                         }
+
                         0x0033 => {
                             let X = ((instruction & 0x0F00) >> 8) as usize;
                             let VX = ram[emulator_data::GPR_START_V0 + X];
@@ -318,6 +347,7 @@ fn main() {
                             let BCD: [u8; 3] = [VX / 100, (VX % 100) / 10, VX % 10];
                             ram[I_usize..=(I_usize + 2)].copy_from_slice(&BCD);
                         }
+
                         0x0055 => {
                             let X = ((instruction & 0x0F00) >> 8) as usize;
                             let ref_I = &ram[emulator_data::I_START..=emulator_data::I_END];
@@ -328,6 +358,7 @@ fn main() {
                             let owned = register_bytes.to_vec();
                             ram[I_usize..=(I_usize + X)].copy_from_slice(&owned[..]);
                         }
+
                         0x0065 => {
                             let X = ((instruction & 0x0F00) >> 8) as usize;
                             let ref_I = &ram[emulator_data::I_START..=emulator_data::I_END];
