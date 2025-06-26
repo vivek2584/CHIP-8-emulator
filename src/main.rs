@@ -1,7 +1,10 @@
 use chip_8_emulator::*;
 use minifb::*;
 use rand::*;
-use std::time::{Duration, Instant};
+use std::{
+    io::empty,
+    time::{Duration, Instant},
+};
 
 fn main() {
     let mut ram: [u8; emulator_data::RAM_SIZE] = [0; emulator_data::RAM_SIZE];
@@ -248,7 +251,52 @@ fn main() {
                 }
 
                 0xD000 => {
-                    todo!() //TODO DXYN => refer to guide, big ass instruction
+                    let X = ((instruction & 0x0F00) >> 8) as usize;
+                    let Y = ((instruction & 0x00F0) >> 4) as usize;
+
+                    let N = (instruction & 0x000F) as usize;
+
+                    let VX = ram[emulator_data::GPR_START_V0 + X];
+                    let VY = ram[emulator_data::GPR_START_V0 + Y];
+
+                    let X_coord = (VX & 63) as usize;
+                    let Y_coord = (VY & 31) as usize;
+
+                    ram[emulator_data::GPR_END_VF] = 0;
+
+                    let I_bytes = &ram[emulator_data::I_START..=emulator_data::I_END];
+                    let I_owned: [u8; 2] = I_bytes.try_into().unwrap();
+                    let I_addr = u16::from_le_bytes(I_owned) as usize;
+
+                    for row in 0..N {
+                        let y = Y_coord + row;
+                        if y >= emulator_data::DISPLAY_HEIGHT {
+                            break;
+                        }
+
+                        let sprite_byte = ram[I_addr + row];
+
+                        for col in 0..8 {
+                            let x = X_coord + col;
+                            if x >= emulator_data::DISPLAY_WIDTH {
+                                break;
+                            }
+                            let pixel_bit = (sprite_byte >> (7 - col)) & 1;
+
+                            if pixel_bit == 1 {
+                                let idx = y * emulator_data::DISPLAY_WIDTH + x;
+
+                                let current_pixel = display_buffer[idx];
+
+                                if current_pixel == 0xFFFFFFFF {
+                                    ram[emulator_data::GPR_END_VF] = 1;
+                                    display_buffer[idx] = 0x00000000;
+                                } else {
+                                    display_buffer[idx] = 0xFFFFFFFF;
+                                }
+                            }
+                        }
+                    }
                 }
 
                 0xE000 => {
