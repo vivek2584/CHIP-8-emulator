@@ -1,4 +1,5 @@
 use chip_8_emulator::*;
+use minifb::*;
 use rand::*;
 use std::time::{Duration, Instant};
 
@@ -10,17 +11,41 @@ fn main() {
     let idx_as_bytes = pc_init_idx.to_le_bytes();
     ram[emulator_data::PC_START..=emulator_data::PC_END].copy_from_slice(&idx_as_bytes);
 
-    let instruction_delay = Duration::from_micros(1_000_000 / 700); // limit to 700 instructions
-    let timer_interval = Duration::from_millis(1000 / 60); // decrease timer 60 times per second
+    let mut display_buffer: Vec<u32> =
+        vec![0; emulator_data::DISPLAY_WIDTH * emulator_data::DISPLAY_HEIGHT];
+
+    let mut window = Window::new(
+        "CHIP-8",
+        emulator_data::DISPLAY_WIDTH,
+        emulator_data::DISPLAY_HEIGHT,
+        WindowOptions::default(),
+    )
+    .unwrap_or_else(|e| {
+        panic!("{}", e);
+    });
+
+    //window.set_target_fps(60);   dont use this as it throttles the instruction execution speed
+    window
+        .update_with_buffer(
+            &display_buffer,
+            emulator_data::DISPLAY_WIDTH,
+            emulator_data::DISPLAY_HEIGHT,
+        )
+        .unwrap();
+
+    let instruction_delay = Duration::from_micros(1000000 / 700);
+    let delay_60hz = Duration::from_micros(1000000 / 60);
     let mut last_execution_time = Instant::now();
     let mut last_delay_decr = Instant::now();
     let mut last_sound_decr = Instant::now();
+    let mut last_display_update = Instant::now();
 
-    loop {
+    while window.is_open() && !window.is_key_down(Key::Escape) {
         if last_execution_time.elapsed() > instruction_delay {
             let current_pc = &ram[emulator_data::PC_START..=emulator_data::PC_END];
             let instruction_idx = u16::from_le_bytes(current_pc.try_into().unwrap()) as usize;
-            update_pc(&mut ram);
+            println!("{}", instruction_idx);
+            increment_pc(&mut ram);
             let instruction_as_bytes =
                 &ram[instruction_idx..instruction_idx + emulator_data::INSTRUCTION_SIZE];
             let instruction: u16 = u16::from_le_bytes(instruction_as_bytes.try_into().unwrap());
@@ -65,7 +90,7 @@ fn main() {
                     let VX = ram[emulator_data::GPR_START_V0 + X];
                     let NN = (instruction & 0x00FF) as u8;
                     if VX == NN {
-                        update_pc(&mut ram);
+                        increment_pc(&mut ram);
                     }
                 }
 
@@ -74,7 +99,7 @@ fn main() {
                     let VX = ram[emulator_data::GPR_START_V0 + X];
                     let NN = (instruction & 0x00FF) as u8;
                     if VX != NN {
-                        update_pc(&mut ram);
+                        increment_pc(&mut ram);
                     }
                 }
 
@@ -84,7 +109,7 @@ fn main() {
                     let Y = ((instruction & 0x00F0) >> 4) as usize;
                     let VY = ram[emulator_data::GPR_START_V0 + Y];
                     if VX == VY {
-                        update_pc(&mut ram);
+                        increment_pc(&mut ram);
                     }
                 }
 
@@ -183,7 +208,7 @@ fn main() {
                     let Y = ((instruction & 0x00F0) >> 4) as usize;
                     let VY = ram[emulator_data::GPR_START_V0 + Y];
                     if VX != VY {
-                        update_pc(&mut ram);
+                        increment_pc(&mut ram);
                     }
                 }
 
@@ -219,6 +244,7 @@ fn main() {
                     //0xEX__
                     match instruction & 0x00FF {
                         0x009E => todo!(), //TODO EX9E => SKIP ONE INSTRUCTION IF KEY CORRESPONDING TO VALUE IN VX IS PRESSED
+                        //pub fn is_key_down(&self, key: Key) -> bool
                         0x00A1 => todo!(), //TODO EXA1 => SKIP ONE INSTRUCTION IF KEY CORRESPONDING TO VALUE IN VX IS NOT PRESSED
                         _ => (),           // KEYS RANGE FROM 0 - F
                     }
@@ -304,16 +330,25 @@ fn main() {
             last_execution_time = Instant::now();
         }
 
-        if (ram[emulator_data::DELAY_TIMER_LOC] > 0) && (last_delay_decr.elapsed() > timer_interval)
-        {
+        if (ram[emulator_data::DELAY_TIMER_LOC] > 0) && (last_delay_decr.elapsed() > delay_60hz) {
             ram[emulator_data::DELAY_TIMER_LOC] -= 1;
             last_delay_decr = Instant::now();
         }
 
-        if (ram[emulator_data::SOUND_TIMER_LOC] > 0) && (last_sound_decr.elapsed() > timer_interval)
-        {
+        if (ram[emulator_data::SOUND_TIMER_LOC] > 0) && (last_sound_decr.elapsed() > delay_60hz) {
             ram[emulator_data::SOUND_TIMER_LOC] -= 1;
             last_sound_decr = Instant::now();
+        }
+
+        if last_display_update.elapsed() > delay_60hz {
+            window
+                .update_with_buffer(
+                    &display_buffer,
+                    emulator_data::DISPLAY_WIDTH,
+                    emulator_data::DISPLAY_HEIGHT,
+                )
+                .unwrap();
+            last_display_update = Instant::now();
         }
     }
 }
