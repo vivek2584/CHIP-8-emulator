@@ -1,6 +1,7 @@
 use chip_8_emulator::*;
 use minifb::*;
 use rand::*;
+use std::env;
 use std::time::{Duration, Instant};
 
 fn main() {
@@ -11,7 +12,8 @@ fn main() {
     let idx_as_bytes = pc_init_idx.to_le_bytes();
     ram[emulator_data::PC_START..=emulator_data::PC_END].copy_from_slice(&idx_as_bytes);
 
-    let rom_path = "roms/IBM Logo.ch8";
+    let cmd_args: Vec<String> = env::args().collect();
+    let rom_path = cmd_args[1].clone();
     let rom_data = std::fs::read(rom_path).expect("Failed to read ROM");
 
     let start = emulator_data::FREE_MEM_START;
