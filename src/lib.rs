@@ -30,3 +30,21 @@ pub fn set_pc(ram: &mut [u8], target: u16) {
     let target_as_bytes = target.to_le_bytes();
     ram[emulator_data::PC_START..=emulator_data::PC_END].copy_from_slice(&target_as_bytes);
 }
+
+pub fn upscale_display_buffer(display_buffer: &[u32], upscaled_buffer: &mut [u32], scale: usize) {
+    let width = emulator_data::DISPLAY_WIDTH;
+    let height = emulator_data::DISPLAY_HEIGHT;
+
+    for y in 0..height {
+        for x in 0..width {
+            let color = display_buffer[y * width + x];
+            for dy in 0..scale {
+                for dx in 0..scale {
+                    let up_x = x * scale + dx;
+                    let up_y = y * scale + dy;
+                    upscaled_buffer[up_y * width * scale + up_x] = color;
+                }
+            }
+        }
+    }
+}

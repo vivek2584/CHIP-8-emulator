@@ -1,10 +1,7 @@
 use chip_8_emulator::*;
 use minifb::*;
 use rand::*;
-use std::{
-    io::empty,
-    time::{Duration, Instant},
-};
+use std::time::{Duration, Instant};
 
 fn main() {
     let mut ram: [u8; emulator_data::RAM_SIZE] = [0; emulator_data::RAM_SIZE];
@@ -17,10 +14,18 @@ fn main() {
     let mut display_buffer: Vec<u32> =
         vec![0; emulator_data::DISPLAY_WIDTH * emulator_data::DISPLAY_HEIGHT];
 
+    let mut upscaled_buffer = vec![
+        0;
+        emulator_data::DISPLAY_WIDTH
+            * emulator_data::SCALE
+            * emulator_data::DISPLAY_HEIGHT
+            * emulator_data::SCALE
+    ];
+
     let mut window = Window::new(
         "CHIP-8",
-        emulator_data::DISPLAY_WIDTH,
-        emulator_data::DISPLAY_HEIGHT,
+        emulator_data::DISPLAY_WIDTH * emulator_data::SCALE,
+        emulator_data::DISPLAY_HEIGHT * emulator_data::SCALE,
         WindowOptions::default(),
     )
     .unwrap_or_else(|e| {
@@ -30,9 +35,9 @@ fn main() {
     //window.set_target_fps(60);   dont use this as it throttles the instruction execution speed
     window
         .update_with_buffer(
-            &display_buffer,
-            emulator_data::DISPLAY_WIDTH,
-            emulator_data::DISPLAY_HEIGHT,
+            &upscaled_buffer,
+            emulator_data::DISPLAY_WIDTH * emulator_data::SCALE,
+            emulator_data::DISPLAY_HEIGHT * emulator_data::SCALE,
         )
         .unwrap();
 
@@ -47,7 +52,6 @@ fn main() {
         if last_execution_time.elapsed() > instruction_delay {
             let current_pc = &ram[emulator_data::PC_START..=emulator_data::PC_END];
             let instruction_idx = u16::from_le_bytes(current_pc.try_into().unwrap()) as usize;
-            println!("{}", instruction_idx);
             increment_pc(&mut ram);
             let instruction_as_bytes =
                 &ram[instruction_idx..instruction_idx + emulator_data::INSTRUCTION_SIZE];
@@ -438,11 +442,12 @@ fn main() {
         }
 
         if last_display_update.elapsed() > delay_60hz {
+            upscale_display_buffer(&display_buffer, &mut upscaled_buffer, emulator_data::SCALE);
             window
                 .update_with_buffer(
-                    &display_buffer,
-                    emulator_data::DISPLAY_WIDTH,
-                    emulator_data::DISPLAY_HEIGHT,
+                    &upscaled_buffer,
+                    emulator_data::DISPLAY_WIDTH * emulator_data::SCALE,
+                    emulator_data::DISPLAY_HEIGHT * emulator_data::SCALE,
                 )
                 .unwrap();
             last_display_update = Instant::now();

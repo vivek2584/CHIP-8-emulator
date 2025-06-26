@@ -1,6 +1,7 @@
 // THIS MODULE DEFINES THE LOCATIONS IN RAM FOR ALL CHIP-8 REGISTERS
 pub const DISPLAY_WIDTH: usize = 64;
 pub const DISPLAY_HEIGHT: usize = 32;
+pub const SCALE: usize = 10;
 
 pub const RAM_SIZE: usize = 4096;
 
