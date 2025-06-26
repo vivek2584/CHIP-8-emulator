@@ -245,10 +245,25 @@ fn main() {
                 0xE000 => {
                     //0xEX__
                     match instruction & 0x00FF {
-                        0x009E => todo!(), //TODO EX9E => SKIP ONE INSTRUCTION IF KEY CORRESPONDING TO VALUE IN VX IS PRESSED
-                        //pub fn is_key_down(&self, key: Key) -> bool
-                        0x00A1 => todo!(), //TODO EXA1 => SKIP ONE INSTRUCTION IF KEY CORRESPONDING TO VALUE IN VX IS NOT PRESSED
-                        _ => (),           // KEYS RANGE FROM 0 - F
+                        0x009E => {
+                            let X = ((instruction & 0x0F00) >> 8) as usize;
+                            let key_hex = ram[emulator_data::GPR_START_V0 + X];
+                            if let Some(key) = key_mappings::get_key(key_hex) {
+                                if window.is_key_down(key) {
+                                    increment_pc(&mut ram);
+                                }
+                            }
+                        }
+                        0x00A1 => {
+                            let X = ((instruction & 0x0F00) >> 8) as usize;
+                            let key_hex = ram[emulator_data::GPR_START_V0 + X];
+                            if let Some(key) = key_mappings::get_key(key_hex) {
+                                if !window.is_key_down(key) {
+                                    increment_pc(&mut ram);
+                                }
+                            }
+                        }
+                        _ => (),
                     }
                 }
 
