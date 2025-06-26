@@ -11,7 +11,7 @@ fn main() {
     let idx_as_bytes = pc_init_idx.to_le_bytes();
     ram[emulator_data::PC_START..=emulator_data::PC_END].copy_from_slice(&idx_as_bytes);
 
-    let rom_path = "roms/PONG.ch8";
+    let rom_path = "roms/IBM Logo.ch8";
     let rom_data = std::fs::read(rom_path).expect("Failed to read ROM");
 
     let start = emulator_data::FREE_MEM_START;
@@ -20,7 +20,7 @@ fn main() {
         panic!("ROM too large to fit in memory");
     }
 
-    ram[start..end].copy_from_slice(&rom_data);
+    ram[start..end].copy_from_slice(&rom_data[..]);
 
     let mut display_buffer: Vec<u32> =
         vec![0; emulator_data::DISPLAY_WIDTH * emulator_data::DISPLAY_HEIGHT];
@@ -63,10 +63,15 @@ fn main() {
         if last_execution_time.elapsed() > instruction_delay {
             let current_pc = &ram[emulator_data::PC_START..=emulator_data::PC_END];
             let instruction_idx = u16::from_le_bytes(current_pc.try_into().unwrap()) as usize;
+            println!("{}", instruction_idx);
+            if instruction_idx > emulator_data::FREE_MEM_END {
+                panic!("RAM going out of bounds!");
+            }
             increment_pc(&mut ram);
+
             let instruction_as_bytes =
-                &ram[instruction_idx..instruction_idx + emulator_data::INSTRUCTION_SIZE];
-            let instruction: u16 = u16::from_le_bytes(instruction_as_bytes.try_into().unwrap());
+                &ram[instruction_idx..(instruction_idx + emulator_data::INSTRUCTION_SIZE)];
+            let instruction: u16 = u16::from_be_bytes(instruction_as_bytes.try_into().unwrap());
 
             match instruction & 0xF000 {
                 0x0000 => {
