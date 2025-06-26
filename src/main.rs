@@ -53,7 +53,9 @@ fn main() {
             match instruction & 0xF000 {
                 0x0000 => {
                     match instruction & 0x00FF {
-                        0x00E0 => todo!(), //TODO CLEAR SCREEN
+                        0x00E0 => {
+                            display_buffer.fill(0);
+                        }
                         0x00EE => {
                             let mut sp = ram[emulator_data::STACK_PTR_LOC] as usize;
                             let addr = &ram[(emulator_data::STACK_START + sp - 2)
@@ -279,6 +281,7 @@ fn main() {
                             ram[emulator_data::I_START..=emulator_data::I_END]
                                 .copy_from_slice(&new_I_as_bytes);
                             ram[emulator_data::GPR_END_VF] = (I_as_u16 > 0x0FFF) as u8;
+                            // ^ AMBIGUOUS
                         }
                         0x000A => todo!(), //TODO WAITS FOR KEY INPUT AND BLOCKS BUT TIMERS SHOULD STILL BE DECREASING, SET HEX VALUE OF KEY TO VX
                         0x0029 => {
