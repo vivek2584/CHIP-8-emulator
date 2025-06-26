@@ -10,10 +10,18 @@ pub fn write_sprite_data(ram: &mut [u8]) {
     }
 }
 
-pub fn update_pc(ram: &mut [u8]) {
+pub fn increment_pc(ram: &mut [u8]) {
     let current_ptr = &ram[emulator_data::PC_START..=emulator_data::PC_END];
     let mut current_as_u16 = u16::from_le_bytes(current_ptr.try_into().unwrap());
     current_as_u16 += emulator_data::INSTRUCTION_SIZE as u16;
+    let ptr_as_bytes = current_as_u16.to_le_bytes();
+    ram[emulator_data::PC_START..=emulator_data::PC_END].copy_from_slice(&ptr_as_bytes);
+}
+
+pub fn decrement_pc(ram: &mut [u8]) {
+    let current_ptr = &ram[emulator_data::PC_START..=emulator_data::PC_END];
+    let mut current_as_u16 = u16::from_le_bytes(current_ptr.try_into().unwrap());
+    current_as_u16 -= emulator_data::INSTRUCTION_SIZE as u16;
     let ptr_as_bytes = current_as_u16.to_le_bytes();
     ram[emulator_data::PC_START..=emulator_data::PC_END].copy_from_slice(&ptr_as_bytes);
 }
