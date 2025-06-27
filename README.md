@@ -1,6 +1,6 @@
 # CHIP-8 Emulator
 
-A CHIP-8 emulator for the COSMAC VIP computer written in Rust.
+A CHIP-8 emulator for the COSMAC VIP microcomputer written in Rust.
 
 ## Dependencies:-
 
@@ -36,7 +36,7 @@ A 0 B F          Z X C V
 
 ## Memory Layout:-
 
-everything is stored inside a 4KB buffer (even registers, ironic isn't it)
+everything is stored inside a 4KB buffer (even registers)
 
 - `0x000-0x04F`: Empty
 - `0x050-0x09F`: Font data (5 bytes per character, 16 characters)
