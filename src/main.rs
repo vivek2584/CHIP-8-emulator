@@ -65,7 +65,6 @@ fn main() {
         if last_execution_time.elapsed() > instruction_delay {
             let current_pc = &ram[emulator_data::PC_START..=emulator_data::PC_END];
             let instruction_idx = u16::from_le_bytes(current_pc.try_into().unwrap()) as usize;
-            println!("{}", instruction_idx);
             if instruction_idx > emulator_data::FREE_MEM_END {
                 panic!("RAM going out of bounds!");
             }
