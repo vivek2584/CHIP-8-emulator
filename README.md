@@ -59,17 +59,6 @@ everything is stored inside a 4KB buffer (even registers)
 
 Some ROMS already in /roms/ dir . You can find more Chip-8 ROMs online (e.g., from https://github.com/dmatlack/chip8)
 
-## File Structure :-
-
-```
-src/
-├── main.rs              # main emulator loop
-├── lib.rs               # helper functions
-├── emulator_data.rs     # memory layout constants
-├── key_mappings.rs      # keyboard mapping functions
-└── sprite_data.rs       # font sprite data
-```
-
 ## References :-
 
 - https://tobiasvl.github.io/blog/write-a-chip-8-emulator/
